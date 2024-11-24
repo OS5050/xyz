@@ -1,0 +1,1246 @@
+1.Address Book
+#!/bin/bash
+
+# File to store address book entries
+ADDRESS_BOOK="address_book.txt"
+
+# Function to add an entry
+add_entry() {
+    echo "Enter Name:"
+    read name
+    echo "Enter Phone Number:"
+    read phone
+    echo "Enter Email:"
+    read email
+
+    echo "$name, $phone, $email" >> $ADDRESS_BOOK
+    echo "Entry added successfully!"
+}
+
+# Function to view all entries
+view_entries() {
+    if [ -s $ADDRESS_BOOK ]; then
+        echo "Address Book Entries:"
+        cat $ADDRESS_BOOK
+    else
+        echo "No entries found."
+    fi
+}
+
+# Function to search for an entry by name
+search_entry() {
+    echo "Enter Name to Search:"
+    read name
+    grep -i "$name" $ADDRESS_BOOK
+    if [ $? -ne 0 ]; then
+        echo "No entry found for $name."
+    fi
+}
+
+# Function to delete an entry by name
+delete_entry() {
+    echo "Enter Name to Delete:"
+    read name
+    grep -i -v "$name" $ADDRESS_BOOK > temp.txt
+    mv temp.txt $ADDRESS_BOOK
+    echo "Entry deleted successfully!"
+}
+
+# Main menu
+while true; do
+    echo "Address Book Menu"
+    echo "1. Add Entry"
+    echo "2. View Entries"
+    echo "3. Search Entry"
+    echo "4. Delete Entry"
+    echo "5. Exit"
+    echo "Enter your choice:"
+    read choice
+
+    case $choice in
+        1)
+            add_entry
+            ;;
+        2)
+            view_entries
+            ;;
+        3)
+            search_entry
+            ;;
+        4)
+            delete_entry
+            ;;
+        5)
+            exit 0
+            ;;
+        *)
+            echo "Invalid choice. Please try again."
+            ;;
+    esac
+done
+---------------------------
+2.Matrix Multiplication
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+#define MAX 3  // Defines the size of the matrix
+
+int matA[MAX][MAX], matB[MAX][MAX], result[MAX][MAX];  // Matrices for operations
+
+// Structure to pass row and column data to threads
+typedef struct {
+    int row;
+    int col;
+} matrix_data;
+
+// Thread function for matrix addition
+void* matrix_add(void* arg) {
+    matrix_data* data = (matrix_data*)arg;
+    int row = data->row;
+    int col = data->col;
+    
+    result[row][col] = matA[row][col] + matB[row][col];
+    
+    pthread_exit(0);
+}
+
+// Thread function for matrix multiplication
+void* matrix_multiply(void* arg) {
+    matrix_data* data = (matrix_data*)arg;
+    int row = data->row;
+    int col = data->col;
+
+    result[row][col] = 0;  // Initialize the result element
+    for (int i = 0; i < MAX; i++) {
+        result[row][col] += matA[row][i] * matB[i][col];
+    }
+
+    pthread_exit(0);
+}
+
+// Function to display matrix
+void display_matrix(int matrix[MAX][MAX]) {
+    for (int i = 0; i < MAX; i++) {
+        for (int j = 0; j < MAX; j++) {
+            printf("%d\t", matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    pthread_t threads[MAX][MAX];  // Array of thread IDs
+    matrix_data data[MAX][MAX];   // Array of structures to pass row and col data
+
+    // Initialize Matrices
+    printf("Enter elements for Matrix A (3x3):\n");
+    for (int i = 0; i < MAX; i++) {
+        for (int j = 0; j < MAX; j++) {
+            scanf("%d", &matA[i][j]);
+        }
+    }
+
+    printf("Enter elements for Matrix B (3x3):\n");
+    for (int i = 0; i < MAX; i++) {
+        for (int j = 0; j < MAX; j++) {
+            scanf("%d", &matB[i][j]);
+        }
+    }
+
+    // Choice for operation
+    int choice;
+    printf("Enter 1 for Addition, 2 for Multiplication: ");
+    scanf("%d", &choice);
+
+    // Create threads based on the operation chosen
+    for (int i = 0; i < MAX; i++) {
+        for (int j = 0; j < MAX; j++) {
+            data[i][j].row = i;
+            data[i][j].col = j;
+
+            if (choice == 1) {
+                // Create threads for matrix addition
+                pthread_create(&threads[i][j], NULL, matrix_add, &data[i][j]);
+            } else if (choice == 2) {
+                // Create threads for matrix multiplication
+                pthread_create(&threads[i][j], NULL, matrix_multiply, &data[i][j]);
+            }
+        }
+    }
+
+    // Wait for all threads to complete
+    for (int i = 0; i < MAX; i++) {
+        for (int j = 0; j < MAX; j++) {
+            pthread_join(threads[i][j], NULL);
+        }
+    }
+
+    // Display the result matrix
+    printf("Resultant Matrix:\n");
+    display_matrix(result);
+
+    return 0;
+}
+----------------------------------------------------------------
+3.Zombie orphan 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+void insertionSort(int arr[], int n) {
+    for (int i = 1; i < n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}
+
+void printArray(int arr[], int n) {
+    for (int i = 0; i < n; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+}
+
+int main() {
+    int n;
+
+    printf("Enter number of integers to sort: ");
+    scanf("%d", &n);
+
+    int arr[n];
+    int childArr[n];
+    
+    printf("Enter %d integers:\n", n);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &arr[i]);
+        childArr[i] = arr[i];  // Copy the array for the child process
+    }
+
+    pid_t pid = fork();  // Create a new child process
+
+    if (pid > 0) {
+        // Parent process
+        printf("Parent process (PID: %d) started.\n", getpid());
+        sleep(2); // Sleep for 2 seconds to let the child process start
+
+        printf("Parent process (PID: %d) sorting using insertion sort...\n", getpid());
+        insertionSort(arr, n);
+        printf("Parent process sorted array: ");
+        printArray(arr, n);
+
+        
+        printf("\nDemonstrating Zombie State: Parent process sleeping for 10 seconds while child exits...\n");
+        sleep(10); 
+
+        wait(NULL);
+        printf("Parent process (PID: %d) has finished waiting for child. Zombie state cleared.\n\n", getpid());
+
+       printf("Parent process (PID: %d) exiting...\n", getpid());
+        sleep(2); // Sleep to allow orphan state to be demonstrated
+
+    } else if (pid == 0) {
+        // Child process
+        printf("Child process (PID: %d, Parent PID: %d) started.\n", getpid(), getppid());
+        printf("Child process sorting using insertion sort...\n");
+        insertionSort(childArr, n);
+        printf("Child process sorted array: ");
+        printArray(childArr, n);
+
+        printf("Child process (PID: %d) finished sorting.\n", getpid());
+
+        sleep(5);
+        printf("\nDemonstrating Orphan State: Child process (PID: %d) continuing after parent exits...\n", getpid());
+
+        printf("Child process (PID: %d) exiting...\n", getpid());
+        exit(0);
+
+    } else {
+        // Fork failed
+        fprintf(stderr, "Fork failed\n");
+        return 1;
+    }
+
+    return 0;
+}
+-------------------------------------------------
+4.: Implementation of Classical Process Synchronization  problems using Threads and Semaphore, Mutex. Application to demonstrate: producer- consumer problem
+
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define BUFFER_SIZE 5
+
+int buffer[BUFFER_SIZE];
+int in = 0, out = 0;
+
+sem_t empty, full;
+pthread_mutex_t buffer_mutex;
+
+void* producer(void* arg) {
+    int item = rand() % 100
+    printf("Produced %d\n", item);
+    sem_wait(&empty);
+    pthread_mutex_lock(&buffer_mutex);
+    buffer[in] = item;
+    in = (in + 1) % BUFFER_SIZE;
+    pthread_mutex_unlock(&buffer_mutex);
+    sem_post(&full);
+    return NULL;
+}
+
+void* consumer(void* arg) {
+    int item;
+    sem_wait(&full);
+    pthread_mutex_lock(&buffer_mutex);
+    item = buffer[out];
+    out = (out + 1) % BUFFER_SIZE;
+    pthread_mutex_unlock(&buffer_mutex);
+    sem_post(&empty);
+    printf("Consumed %d\n", item);
+    return NULL;
+}
+
+void displayBuffer() {
+    printf("Buffer: ");
+    pthread_mutex_lock(&buffer_mutex);
+    for (int i = 0; i < BUFFER_SIZE; i++) {
+        if(buffer[i] != 0) {
+            printf("%d ", buffer[i]);
+        }
+    }
+    pthread_mutex_unlock(&buffer_mutex);
+    printf("\n");
+}
+
+int main() {
+    int choice;
+    pthread_t prod_thread, cons_thread;
+
+    sem_init(&empty, 0, BUFFER_SIZE);
+    sem_init(&full, 0, 0);
+    pthread_mutex_init(&buffer_mutex, NULL);
+
+    while (1) {
+        printf("\nChoose an operation:\n");
+        printf("1. Start Producer\n");
+        printf("2. Start Consumer\n");
+        printf("3. Display Buffer\n");
+        printf("4. Exit Program\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1: 
+                pthread_create(&prod_thread, NULL, producer, NULL); 
+                pthread_join(prod_thread, NULL); 
+                break;
+            case 2: 
+                pthread_create(&cons_thread, NULL, consumer, NULL); 
+                pthread_join(cons_thread, NULL); 
+                break;
+            case 3: 
+                displayBuffer(); 
+                break;
+            case 4: 
+                printf("Exiting program.\n");
+                sem_destroy(&empty);
+                sem_destroy(&full);
+                pthread_mutex_destroy(&buffer_mutex);
+                exit(0);
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+
+    return 0;
+}
+--------------------------------------------------------
+5.Implementation of Classical Process Synchronization problems using mutex. Application to demonstrate: Reader- Writer problem
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+sem_t wrt;
+pthread_mutex_t mutex;
+int read_count = 0;
+int data = 0; // Shared data
+
+void *writer(void *arg) {
+    sem_wait(&wrt);
+    data++;
+    printf("Writer %d modified data to %d\n", *((int *)arg), data);
+    sem_post(&wrt);
+    return NULL;
+}
+
+void *reader(void *arg) {
+    pthread_mutex_lock(&mutex);
+    read_count++;
+    printf("Reader %d started reading. Read count: %d\n", *((int *)arg), read_count);
+    if (read_count == 1) {
+        sem_wait(&wrt);
+    }
+    pthread_mutex_unlock(&mutex);
+
+    printf("Reader %d read data as %d\n", *((int *)arg), data);
+
+    pthread_mutex_lock(&mutex);
+    read_count--;
+    printf("Reader %d finished reading. Read count: %d\n", *((int *)arg), read_count);
+    if (read_count == 0) {
+        sem_post(&wrt);
+    }
+    pthread_mutex_unlock(&mutex);
+    return NULL;
+}
+
+int main() {
+    pthread_t read[5], write[5];
+    pthread_mutex_init(&mutex, NULL);
+    sem_init(&wrt, 0, 1);
+
+    int a[5] = {1, 2, 3, 4, 5}; // Just to identify readers and writers
+
+    for (int i = 0; i < 5; i++) {
+        pthread_create(&write[i], NULL, writer, &a[i]);
+        pthread_create(&read[i], NULL, reader, &a[i]);
+    }
+
+    for (int i = 0; i < 5; i++) {
+        pthread_join(write[i], NULL);
+        pthread_join(read[i], NULL);
+    }
+
+    pthread_mutex_destroy(&mutex);
+    sem_destroy(&wrt);
+
+    return 0;
+}
+------------------------------------------------------------------
+6.: Write a program to compute the finish time, turnaround time and waiting time for the following algorithms: First come First serve b) Shortest Job First (Preemptive and Non Preemptive)  c) Priority (Preemptive and Non Preemptive) d) Round robin 
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_PROCESSES 100
+
+struct Process {
+    int pid;            
+    int burst_time;     
+    int arrival_time;   
+    int priority;       
+    int remaining_time; 
+    int finish_time;    
+    int turnaround_time; 
+    int waiting_time;   
+};
+
+
+void find_fcfs(struct Process proc[], int n);
+void find_sjf_non_preemptive(struct Process proc[], int n);
+void find_sjf_preemptive(struct Process proc[], int n);
+void find_priority_non_preemptive(struct Process proc[], int n);
+void find_priority_preemptive(struct Process proc[], int n);
+void find_round_robin(struct Process proc[], int n, int quantum);
+void calculate_times(struct Process proc[], int n);
+
+int main() {
+    int n, i, choice, quantum = 0;
+    struct Process proc[MAX_PROCESSES];
+
+    printf("Choose Scheduling Algorithm:\n");
+    printf("1. First Come First Serve (FCFS)\n");
+    printf("2. Shortest Job First (Non-Preemptive)\n");
+    printf("3. Shortest Job First (Preemptive)\n");
+    printf("4. Priority Scheduling (Non-Preemptive)\n");
+    printf("5. Priority Scheduling (Preemptive)\n");
+    printf("6. Round Robin\n");
+    printf("Enter your choice: ");
+    scanf("%d", &choice);
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    
+    for (i = 0; i < n; i++) {
+        proc[i].pid = i + 1; 
+        printf("Enter Burst Time for Process %d: ", proc[i].pid);
+        scanf("%d", &proc[i].burst_time);
+        printf("Enter Arrival Time for Process %d: ", proc[i].pid);
+        scanf("%d", &proc[i].arrival_time);
+        proc[i].remaining_time = proc[i].burst_time;
+
+       
+        if (choice == 4 || choice == 5) {
+            printf("Enter Priority for Process %d (lower number means higher priority): ", proc[i].pid);
+            scanf("%d", &proc[i].priority);
+        }
+    }
+
+    
+    if (choice == 6) {
+        printf("Enter Quantum Time for Round Robin: ");
+        scanf("%d", &quantum);
+    }
+
+    
+    switch (choice) {
+        case 1:
+            find_fcfs(proc, n);
+            break;
+        case 2:
+            find_sjf_non_preemptive(proc, n);
+            break;
+        case 3:
+            find_sjf_preemptive(proc, n);
+            break;
+        case 4:
+            find_priority_non_preemptive(proc, n);
+            break;
+        case 5:
+            find_priority_preemptive(proc, n);
+            break;
+        case 6:
+            find_round_robin(proc, n, quantum);
+            break;
+        default:
+            printf("Invalid choice!\n");
+            break;
+    }
+
+    return 0;
+}
+
+void calculate_times(struct Process proc[], int n) {
+    for (int i = 0; i < n; i++) {
+        proc[i].turnaround_time = proc[i].finish_time - proc[i].arrival_time;
+        proc[i].waiting_time = proc[i].turnaround_time - proc[i].burst_time;
+    }
+
+    printf("\nPID\tFinish Time\tTurnaround Time\tWaiting Time\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t\t%d\t\t%d\n", proc[i].pid, proc[i].finish_time, proc[i].turnaround_time, proc[i].waiting_time);
+    }
+}
+
+void find_fcfs(struct Process proc[], int n) {
+    int time = 0;
+
+    for (int i = 0; i < n; i++) {
+        if (time < proc[i].arrival_time) {
+            time = proc[i].arrival_time; 
+        }
+        time += proc[i].burst_time;
+        proc[i].finish_time = time;
+    }
+
+    calculate_times(proc, n);
+}
+
+void find_sjf_non_preemptive(struct Process proc[], int n) {
+    int time = 0;  
+    int completed = 0;  
+    int min_index; 
+    int is_completed[MAX_PROCESSES] = {0};  
+
+    
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (proc[i].arrival_time > proc[j].arrival_time) {
+                struct Process temp = proc[i];
+                proc[i] = proc[j];
+                proc[j] = temp;
+            }
+        }
+    }
+
+    while (completed < n) {
+        min_index = -1;
+
+        
+        for (int i = 0; i < n; i++) {
+            if (proc[i].arrival_time <= time && !is_completed[i]) {
+                if (min_index == -1 || proc[i].burst_time < proc[min_index].burst_time) {
+                    min_index = i;
+                }
+            }
+        }
+
+
+        if (min_index != -1) {
+            time += proc[min_index].burst_time;  
+            proc[min_index].finish_time = time; 
+            is_completed[min_index] = 1;  
+            completed++;  
+        } else {
+          
+            time++;
+        }
+    }
+
+    
+    calculate_times(proc, n);
+}
+
+
+
+void find_sjf_preemptive(struct Process proc[], int n) {
+    int time = 0;
+    int completed = 0;
+    int min_index;
+    int remaining_processes = n;
+
+    while (completed < remaining_processes) {
+        min_index = -1;
+        for (int i = 0; i < n; i++) {
+            if (proc[i].arrival_time <= time && proc[i].remaining_time > 0) {
+                if (min_index == -1 || proc[i].remaining_time < proc[min_index].remaining_time) {
+                    min_index = i;
+                }
+            }
+        }
+
+        if (min_index != -1) {
+            proc[min_index].remaining_time--;
+            time++;
+            if (proc[min_index].remaining_time == 0) {
+                proc[min_index].finish_time = time;
+                completed++;
+            }
+        } else {
+            time++; // Idle time
+        }
+    }
+
+    calculate_times(proc, n);
+}
+
+void find_priority_non_preemptive(struct Process proc[], int n) {
+    int time = 0;
+    int completed = 0;
+    int min_index;
+    int is_completed[MAX_PROCESSES] = {0};
+
+    while (completed < n) {
+        min_index = -1;
+
+        for (int i = 0; i < n; i++) {
+            if (!is_completed[i] && proc[i].arrival_time <= time) {
+                if (min_index == -1 || proc[i].priority < proc[min_index].priority) {
+                    min_index = i;
+                }
+            }
+        }
+
+        if (min_index != -1) {
+            time += proc[min_index].burst_time;
+            proc[min_index].finish_time = time;
+            is_completed[min_index] = 1;
+            completed++;
+        } else {
+            time++; // Idle time
+        }
+    }
+
+    calculate_times(proc, n);
+}
+
+void find_priority_preemptive(struct Process proc[], int n) {
+    int time = 0;
+    int completed = 0;
+    int min_index;
+    int remaining_processes = n;
+
+    while (completed < remaining_processes) {
+        min_index = -1;
+
+        for (int i = 0; i < n; i++) {
+            if (proc[i].arrival_time <= time && proc[i].remaining_time > 0) {
+                if (min_index == -1 || proc[i].priority < proc[min_index].priority) {
+                    min_index = i;
+                }
+            }
+        }
+
+        if (min_index != -1) {
+            proc[min_index].remaining_time--;
+            time++;
+            if (proc[min_index].remaining_time == 0) {
+                proc[min_index].finish_time = time;
+                completed++;
+            }
+        } else {
+            time++; // Idle time
+        }
+    }
+
+    calculate_times(proc, n);
+}
+
+void find_round_robin(struct Process proc[], int n, int quantum) {
+    int time = 0;             
+    int completed = 0;        
+    int i;
+    int queue_index = 0;       
+    int all_done = 0;         
+    int is_completed[MAX_PROCESSES] = {0}; 
+
+    while (completed < n) {
+        all_done = 1;  
+
+        
+        for (i = 0; i < n; i++) {
+            if (proc[i].arrival_time <= time && proc[i].remaining_time > 0) {
+                all_done = 0; 
+                
+               
+                if (proc[i].remaining_time <= quantum) {
+                    time += proc[i].remaining_time;  
+                    proc[i].remaining_time = 0;      
+                    proc[i].finish_time = time;      
+                    completed++;                     
+                } else {
+                    time += quantum;                 
+                    proc[i].remaining_time -= quantum; 
+                }
+            }
+        }
+
+        
+        if (all_done) {
+            int next_arrival_time = __INT_MAX__;
+            for (int j = 0; j < n; j++) {
+                if (proc[j].remaining_time > 0 && proc[j].arrival_time > time) {
+                    next_arrival_time = (proc[j].arrival_time < next_arrival_time) ? proc[j].arrival_time : next_arrival_time;
+                }
+            }
+            time = next_arrival_time;
+        }
+    }
+
+    calculate_times(proc, n);
+}
+-------------------------------------------------------------------------------
+7.Write a program to check whether a given system is in safe state or not using Banker’s  Deadlock Avoidance algorithm.
+
+
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_PROCESSES 10
+#define MAX_RESOURCES 10
+
+int available[MAX_RESOURCES];            
+int maximum[MAX_PROCESSES][MAX_RESOURCES];   
+int allocation[MAX_PROCESSES][MAX_RESOURCES]; 
+int need[MAX_PROCESSES][MAX_RESOURCES];     
+int work[MAX_RESOURCES];            
+bool finish[MAX_PROCESSES];       
+
+int processes, resources;
+
+
+void display() {
+    printf("\n------------------------ System State ------------------------\n");
+
+    
+    printf("\nAvailable Resources:\n");
+    for (int i = 0; i < resources; i++) {
+        printf("R%d ", i);
+    }
+    printf("\n");
+    for (int i = 0; i < resources; i++) {
+        printf("%d  ", available[i]);
+    }
+
+    
+    printf("\n\nProcess\t| Allocation\t| Maximum\t| Need\n");
+    printf("-------------------------------------------------------------\n");
+    for (int i = 0; i < processes; i++) {
+        printf("P%d\t| ", i);
+        
+       
+        for (int j = 0; j < resources; j++) {
+            printf("%d ", allocation[i][j]);
+        }
+        printf("\t| ");
+        
+        
+        for (int j = 0; j < resources; j++) {
+            printf("%d ", maximum[i][j]);
+        }
+        printf("\t| ");
+
+        for (int j = 0; j < resources; j++) {
+            printf("%d ", need[i][j]);
+        }
+        printf("\n");
+    }
+    printf("-------------------------------------------------------------\n");
+}
+
+
+void input() {
+    printf("Enter the number of processes: ");
+    scanf("%d", &processes);
+
+    printf("Enter the number of resource types: ");
+    scanf("%d", &resources);
+
+    printf("\nEnter the total available resources for each type:\n");
+    for (int i = 0; i < resources; i++) {
+        printf("Available resources of type R%d: ", i);
+        scanf("%d", &available[i]);
+    }
+
+    printf("\nEnter the maximum resource matrix (Maximum resources required by each process):\n");
+    for (int i = 0; i < processes; i++) {
+        printf("For process P%d:\n", i);
+        for (int j = 0; j < resources; j++) {
+            printf("Maximum resources of type R%d: ", j);
+            scanf("%d", &maximum[i][j]);
+        }
+    }
+
+    printf("\nEnter the allocation matrix (Resources currently allocated to each process):\n");
+    for (int i = 0; i < processes; i++) {
+        printf("For process P%d:\n", i);
+        for (int j = 0; j < resources; j++) {
+            printf("Allocated resources of type R%d: ", j);
+            scanf("%d", &allocation[i][j]);
+        }
+    }
+
+ 
+    for (int i = 0; i < processes; i++) {
+        for (int j = 0; j < resources; j++) {
+            need[i][j] = maximum[i][j] - allocation[i][j];
+        }
+    }
+}
+
+bool isSafe() {
+    printf("\nChecking system safety...\n");
+
+
+    for (int i = 0; i < resources; i++) {
+        work[i] = available[i];
+    }
+
+    for (int i = 0; i < processes; i++) {
+        finish[i] = false;
+    }
+
+    for (int count = 0; count < processes; count++) {
+        bool found = false;
+        for (int p = 0; p < processes; p++) {
+            if (!finish[p]) {
+                int j;
+                for (j = 0; j < resources; j++) {
+                    if (need[p][j] > work[j]) {
+                        break;
+                    }
+                }
+
+                if (j == resources) { 
+                    for (int k = 0; k < resources; k++) {
+                        work[k] += allocation[p][k];
+                    }
+                    finish[p] = true;
+                    found = true;
+                    printf("Process P%d can complete. Updated work resources: ", p);
+                    for (int k = 0; k < resources; k++) {
+                        printf("%d ", work[k]);
+                    }
+                    printf("\n");
+                }
+            }
+        }
+
+        if (!found) {
+            printf("System is NOT in a safe state!\n");
+            return false; 
+        }
+    }
+    printf("System is in a SAFE state!\n");
+    return true; 
+}
+
+
+bool requestResources(int process, int request[]) {
+    printf("\nProcessing resource request for process P%d:\n", process);
+
+
+    for (int i = 0; i < resources; i++) {
+        if (request[i] > need[process][i]) {
+            printf("Error: process has exceeded its maximum claim.\n");
+            return false;
+        }
+    }
+
+ 
+    for (int i = 0; i < resources; i++) {
+        if (request[i] > available[i]) {
+            printf("Resources unavailable for process P%d. Request must wait.\n", process);
+            return false;
+        }
+    }
+
+    for (int i = 0; i < resources; i++) {
+        available[i] -= request[i];
+        allocation[process][i] += request[i];
+        need[process][i] -= request[i];
+    }
+
+
+    if (isSafe()) {
+        printf("Resources allocated successfully to process P%d.\n", process);
+        return true;
+    } else {
+        
+        for (int i = 0; i < resources; i++) {
+            available[i] += request[i];
+            allocation[process][i] -= request[i];
+            need[process][i] += request[i];
+        }
+        printf("Request cannot be granted. System would be unsafe.\n");
+        return false;
+    }
+}
+
+int main() {
+    input();
+
+ 
+    printf("\n============ Initial System State ============\n");
+    display();
+
+    printf("\nChecking if the system is initially in a safe state...\n");
+    if (isSafe()) {
+        printf("System is initially in a safe state.\n");
+    } else {
+        printf("System is not initially in a safe state.\n");
+    }
+
+    int process;
+    printf("\nEnter the process number (0-%d) to request resources: ", processes - 1);
+    scanf("%d", &process);
+
+    int request[MAX_RESOURCES];
+    printf("Enter the resource request for process P%d (space-separated):\n", process);
+    for (int i = 0; i < resources; i++) {
+        scanf("%d", &request[i]);
+    }
+
+    if (requestResources(process, request)) {
+        printf("Resources granted to process P%d.\n", process);
+    } else {
+        printf("Resources could not be granted to process P%d.\n", process);
+    }
+
+    
+    printf("\n============ Final System State ============\n");
+    display();
+
+return 0;
+}
+-------------------------------------------------------------------------------------
+8.Write a program to calculate the number of page faults for a reference string for the following page replacement algorithms: 
+1.	FIFO     b) LRU     c) Optimal
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_FRAMES 10
+#define MAX_REFERENCES 100
+
+
+int fifo(int pages[], int n, int frame_count);
+int lru(int pages[], int n, int frame_count);
+int optimal(int pages[], int n, int frame_count);
+
+int main() {
+    int pages[MAX_REFERENCES], n, frame_count;
+
+    printf("Enter the number of pages: ");
+    scanf("%d", &n);
+    printf("Enter the page reference string (space-separated): ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &pages[i]);
+    }
+    printf("Enter the number of frames: ");
+    scanf("%d", &frame_count);
+
+  
+    int fifo_faults = fifo(pages, n, frame_count);
+    int lru_faults = lru(pages, n, frame_count);
+    int optimal_faults = optimal(pages, n, frame_count);
+
+
+    printf("\nPage Faults:\n");
+    printf("FIFO: %d\n", fifo_faults);
+    printf("LRU: %d\n", lru_faults);
+    printf("Optimal: %d\n", optimal_faults);
+
+    return 0;
+}
+
+// FIFO Page Replacement Algorithm
+int fifo(int pages[], int n, int frame_count) {
+    int frames[MAX_FRAMES] = {-1};
+    int page_faults = 0, next_frame = 0;
+
+    for (int i = 0; i < n; i++) {
+        int page_found = 0;
+        for (int j = 0; j < frame_count; j++) {
+            if (frames[j] == pages[i]) {
+                page_found = 1;
+                break;
+            }
+        }
+        if (!page_found) {
+            frames[next_frame] = pages[i];
+            next_frame = (next_frame + 1) % frame_count;
+            page_faults++;
+        }
+    }
+    return page_faults;
+}
+
+// LRU Page Replacement Algorithm
+int lru(int pages[], int n, int frame_count) {
+    int frames[MAX_FRAMES] = {-1};
+    int page_faults = 0;
+
+    for (int i = 0; i < n; i++) {
+        int page_found = 0;
+        for (int j = 0; j < frame_count; j++) {
+            if (frames[j] == pages[i]) {
+                page_found = 1;
+                break;
+            }
+        }
+        if (!page_found) {
+            int lru_index = 0;
+            for (int j = 0; j < frame_count; j++) {
+                if (frames[j] == -1) {
+                    lru_index = j;
+                    break;
+                }
+                for (int k = i - 1; k >= 0; k--) {
+                    if (frames[j] == pages[k]) {
+                        lru_index = j;
+                        break;
+                    }
+                }
+            }
+            frames[lru_index] = pages[i];
+            page_faults++;
+        }
+    }
+    return page_faults;
+}
+
+// Optimal Page Replacement Algorithm
+int optimal(int pages[], int n, int frame_count) {
+    int frames[MAX_FRAMES] = {-1};
+    int page_faults = 0;
+
+    for (int i = 0; i < n; i++) {
+        int page_found = 0;
+        for (int j = 0; j < frame_count; j++) {
+            if (frames[j] == pages[i]) {
+                page_found = 1;
+                break;
+            }
+        }
+        if (!page_found) {
+            int farthest_index = -1, replace_index = -1;
+            for (int j = 0; j < frame_count; j++) {
+                int found = 0;
+                for (int k = i + 1; k < n; k++) {
+                    if (frames[j] == pages[k]) {
+                        found = 1;
+                        if (farthest_index < k) {
+                            farthest_index = k;
+                            replace_index = j;
+                        }
+                        break;
+                    }
+                }
+                if (!found) {
+                    replace_index = j;
+                    break;
+                }
+            }
+            frames[replace_index] = pages[i];
+            page_faults++;
+        }
+    }
+    return page_faults;
+}
+-----------------------------------------------------------------------------
+9.Write a program for Disk Scheduling Algorithms: SSTF, SCAN, C-Look considering the initial head position moving away from the spindle.
+#include <stdio.h>
+#include <stdlib.h>
+
+// Function for SSTF (Shortest Seek Time First)
+int findShortestSeekTime(int head, int *requests, int n, int *visited) {
+    int min = 1e9, index = -1;
+    for (int i = 0; i < n; i++) {
+        if (!visited[i]) {
+            int distance = abs(requests[i] - head);
+            if (distance < min) {
+                min = distance;
+                index = i;
+            }
+        }
+    }
+    return index;
+}
+
+void sstf(int *requests, int n, int head) {
+    int visited[n];
+    for (int i = 0; i < n; i++) visited[i] = 0;
+
+    int totalSeekTime = 0;
+    printf("SSTF Disk Scheduling Order:\n");
+    for (int i = 0; i < n; i++) {
+        int index = findShortestSeekTime(head, requests, n, visited);
+        visited[index] = 1;
+        printf("%d ", requests[index]);
+        totalSeekTime += abs(requests[index] - head);
+        head = requests[index];
+    }
+    printf("\nTotal Seek Time: %d\n", totalSeekTime);
+}
+
+// Function for SCAN 
+void scan(int *requests, int n, int head, int disk_size) {
+    int totalSeekTime = 0;
+    printf("SCAN Disk Scheduling Order:\n");
+
+    
+    for (int i = 0; i < n - 1; i++)
+        for (int j = i + 1; j < n; j++)
+            if (requests[i] > requests[j]) {
+                int temp = requests[i];
+                requests[i] = requests[j];
+                requests[j] = temp;
+            }
+
+ 
+    for (int i = 0; i < n; i++) {
+        if (requests[i] >= head) {
+            for (int j = i; j < n; j++) {
+                printf("%d ", requests[j]);
+                totalSeekTime += abs(requests[j] - head);
+                head = requests[j];
+            }
+            totalSeekTime += abs(disk_size - 1 - head); 
+            head = disk_size - 1;
+            break;
+        }
+    }
+
+    
+    for (int i = n - 1; i >= 0; i--) {
+        if (requests[i] < head) {
+            printf("%d ", requests[i]);
+            totalSeekTime += abs(requests[i] - head);
+            head = requests[i];
+        }
+    }
+
+    printf("\nTotal Seek Time: %d\n", totalSeekTime);
+}
+
+// Function for C-LOOK (Circular LOOK)
+void clook(int *requests, int n, int head) {
+    int totalSeekTime = 0;
+    printf("C-LOOK Disk Scheduling Order:\n");
+
+  
+    for (int i = 0; i < n - 1; i++)
+        for (int j = i + 1; j < n; j++)
+            if (requests[i] > requests[j]) {
+                int temp = requests[i];
+                requests[i] = requests[j];
+                requests[j] = temp;
+            }
+
+
+    for (int i = 0; i < n; i++) {
+        if (requests[i] >= head) {
+            for (int j = i; j < n; j++) {
+                printf("%d ", requests[j]);
+                totalSeekTime += abs(requests[j] - head);
+                head = requests[j];
+            }
+            
+            totalSeekTime += abs(requests[0] - head);
+            head = requests[0];
+            break;
+        }
+    }
+
+  
+    for (int i = 0; i < n; i++) {
+        if (requests[i] < head) {
+            printf("%d ", requests[i]);
+            totalSeekTime += abs(requests[i] - head);
+            head = requests[i];
+        }
+    }
+
+    printf("\nTotal Seek Time: %d\n", totalSeekTime);
+}
+
+int main() {
+    int n, disk_size, choice;
+    int head = 0;
+
+    printf("Enter number of requests: ");
+    scanf("%d", &n);
+    int requests[n];
+    printf("Enter the request sequence: ");
+    for (int i = 0; i < n; i++) scanf("%d", &requests[i]);
+    printf("Enter the total disk size (for SCAN and C-LOOK): ");
+    scanf("%d", &disk_size);
+
+   
+    printf("\nChoose Disk Scheduling Algorithm:\n");
+    printf("1. SSTF\n");
+    printf("2. SCAN\n");
+    printf("3. C-LOOK\n");
+    printf("Enter your choice (1-3): ");
+    scanf("%d", &choice);
+
+    switch (choice) {
+        case 1:
+            sstf(requests, n, head);
+            break;
+        case 2:
+            scan(requests, n, head, disk_size);
+            break;
+        case 3:
+            clook(requests, n, head);
+            break;
+        default:
+            printf("Invalid choice!\n");
+            break;
+    }
+
+return 0;
+}
+------------------------------------------------------------
+10.Virtual Assignment
